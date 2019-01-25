@@ -15,7 +15,7 @@ The solution would be to optimize the layout of slices using genetic algorithm.
 ### Progress of development:
 * ~~Layout generator~~
 * ~~Field drawer~~
-* Layout drawer
+* ~~Layout drawer~~
 * ~~Generalized layout generator that can start from an incomplete layout~~
 * Crossover procedure
 * Mutation procedure
@@ -34,8 +34,9 @@ This would help to reconfigure slices near the area, where cells became unreacha
 * Some cells might be unreachable. Write an algorithm that calculates them and then just ignore them?
 * Create the initial population with filling everything with maximum (or minimum) possible slices size?
 * Insert a probability of randomly skipping a cell without any ingridients?
-* ~~Create the layout in random direction? (As opposed to left-to-right up-to-down)~~ A test have shown that it reduces efficiency a lot.
-Instead, it might be interesting to fill the layout in spiral order.
+* ~~Create the layout in random direction? (As opposed to left-to-right up-to-down)~~ 
+A test have shown that it reduces efficiency a lot.
+Instead, filling the layout in spiral order might be helpful.
 
 ### Helpful links:
 Read about the contest:
