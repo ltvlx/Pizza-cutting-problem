@@ -226,27 +226,21 @@ def generate_layout(layout, slices, n_col, n_row):
 
 
 
-pizza, n_row, n_col, _L, _H = read_setup("input/c_medium.in") # 
-slices = generate_possible_slices(_L, _H)
+if __name__ == "__main__":
+    pizza, n_row, n_col, _L, _H = read_setup("input/c_medium.in") # a_example  b_small  c_medium  d_big
+    slices = generate_possible_slices(_L, _H)
 
-# print("Slices: ", slices)
-draw_pizza(pizza)
+    for i in range(len(slices)):
+        print(i, slices[i])
 
-for i in range(len(slices)):
-    print(i, slices[i])
+    print("Max score is %d"%(n_col * n_row))
+    layout = []
 
+    c_empty, c_used, layout = generate_layout(layout, slices, n_col, n_row)
+            
+    efficiency = 100 * (1 - sum(c_empty) / n_row / n_col)
+    print("The efficiency of the created layout = %5.2f%%; score is %d"%(efficiency, sum(c_used)))
+    # print(layout)
 
-print("Max score is %d"%(n_col * n_row))
-# layout = [(0, 4), (1, 8), (2, 3), (10, 0), (12, 8), (13, 4), (16, 0), (18, 6), (23, 0)]
-layout = []
-
-c_empty, c_used, layout = generate_layout(layout, slices, n_col, n_row)
-draw_layout(layout, slices, n_row, n_col)
-
-        
-efficiency = 100 * (1 - sum(c_empty) / n_row / n_col)
-print("The efficiency of the created layout = %5.2f%%; score is %d"%(efficiency, sum(c_used)))
-# print(layout)
-
-
-
+    draw_pizza(pizza)
+    draw_layout(layout, slices, n_row, n_col)
