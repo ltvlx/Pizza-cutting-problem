@@ -28,8 +28,7 @@ How to mutate an individual?
 
 ### Additional thoughts:
 * Some cells might be unreachable. Write an algorithm that calculates them and then just ignore them?
-* Create the initial population with filling everything with maximum possible slices?
-* --.--.-- with minimum possible slices?
+* Create the initial population with filling everything with maximum (or minimum) possible slices size?
 * Insert a probability of randomly skipping a cell without any ingridients?
 * Create the layout in random direction? (As opposed to left-to-right up-to-down)
 
