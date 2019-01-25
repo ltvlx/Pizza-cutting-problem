@@ -44,7 +44,7 @@ def generate_possible_slices(_L, _H):
 
 def draw_pizza(pizza):
     """
-    Draws the image of pizza into the "pizza_image.pdf" as 2D colormap
+    Draws the image of pizza into the "img_pizza.pdf" as 2D colormap
     """
     n_row = len(pizza)
     n_col = len(pizza[0])
@@ -64,9 +64,41 @@ def draw_pizza(pizza):
     plt.imshow(mtr, cmap='YlOrBr')
     plt.gca().axes.get_xaxis().set_visible(False)
     plt.gca().axes.get_yaxis().set_visible(False)
+    plt.axis('off')
 
-    plt.savefig("pizza_image.pdf", bbox_inches = 'tight')
+    plt.savefig("img_pizza.pdf", bbox_inches='tight', pad_inches=0.01)
+    plt.close()
     # plt.show()
+
+
+def draw_layout(layout, slices, n_row, n_col):
+    """
+    Draws the image of the layout into the "img_layout.pdf" as 2D colormap
+    Input layout is assumed to be correct (slices are within the pizza boundaries)
+    """
+    mtr = np.zeros((n_row, n_col), dtype=int)
+
+    for pos, k in layout:
+        y = pos // n_col
+        x = pos - y * n_col
+        l, h = slices[k]
+        for i in range(y, y+h):
+            for j in range(x, x+l):
+                mtr[i][j] = 1
+    
+    scale = 8 / max(n_row, n_col)
+    # print((n_row * scale, n_col * scale))
+
+    plt.figure(figsize=(n_row * scale, n_col * scale))
+    plt.imshow(mtr, cmap='YlOrBr_r')
+    plt.gca().axes.get_xaxis().set_visible(False)
+    plt.gca().axes.get_yaxis().set_visible(False)
+    plt.axis('off')
+
+    plt.savefig("img_layout.pdf", bbox_inches='tight', pad_inches=0.01)    
+    # plt.show()
+    plt.close()
+
 
 
 def isolated_cell(c_used, x, y, n_row, n_col):
@@ -209,7 +241,7 @@ print("Max score is %d"%(n_col * n_row))
 layout = []
 
 c_empty, c_used, layout = generate_layout(layout, slices, n_col, n_row)
-
+draw_layout(layout, slices, n_row, n_col)
 
         
 efficiency = 100 * (1 - sum(c_empty) / n_row / n_col)
