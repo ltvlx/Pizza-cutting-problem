@@ -47,14 +47,14 @@ A test has shown that it reduces efficiency a lot.
 Instead, filling the layout in spiral order might be helpful.
 
 ### Helpful links:
-Read about the contest:
+Read about the contest:  
 https://codingcompetitions.withgoogle.com/hashcode
 
-Join the team:
+Join the team:  
 https://hashcodejudge.withgoogle.com/#join-team/5244709622513664/sX-bzEaQ6Ceq1q03UxMN0mTCv51kh9ue0SPu44dAEY4
 
-Cutting stock problem solved via genetic algorithm:
+Cutting stock problem solved via genetic algorithm:  
 https://github.com/fabiofdsantos/2d-cutting-stock-problem
 
-Knapsack problem solved via genetic algorithm:
+Knapsack problem solved via genetic algorithm:  
 http://www.nils-haldenwang.de/computer-science/computational-intelligence/genetic-algorithm-vs-0-1-knapsack
