@@ -2,7 +2,7 @@ import random
 import codecs
 import numpy as np
 import matplotlib.pyplot as plt
-# random.seed(0)
+random.seed(0)
 
 
 def read_setup(fname):
@@ -101,7 +101,6 @@ def draw_layout(layout, slices, n_row, n_col):
     plt.close()
 
 
-
 def isolated_cell(c_empty, x, y, n_row, n_col):
     """
     Checks if there is a border or a filled cell to the left or down the (x,y).
@@ -194,13 +193,6 @@ def generate_layout(layout, slices, n_col, n_row):
     for pos in range(n_row * n_col):
         if not c_empty[pos]:
             continue
-        # # Random chance to leave the cell unused without even trying to fit anything here 
-        # # First, prove that this is necessary
-        # if random.random() < 0.1:
-        #     print("Randomly skipping %d"%pos)
-        #     c_slice[pos] = 1
-        #     c_empty[pos] = 0
-        #     continue
         
         y = pos // n_col
         x = pos - y * n_col
@@ -229,9 +221,8 @@ def generate_layout(layout, slices, n_col, n_row):
     return c_empty, c_slice, layout
 
 
-
 if __name__ == "__main__":
-    pizza, n_row, n_col, _L, _H = read_setup("input/c_medium.in") # a_example  b_small  c_medium  d_big
+    pizza, n_row, n_col, _L, _H = read_setup("input/test.in") # a_example  b_small  c_medium  d_big
     slices = generate_possible_slices(_L, _H)
 
     for i in range(len(slices)):
