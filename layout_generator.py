@@ -78,7 +78,8 @@ def draw_layout(layout, slices, n_row, n_col):
     """
     mtr = np.zeros((n_row, n_col), dtype=int)
 
-    for pos, k in layout:
+    for pos in layout:
+        k = layout[pos]
         y = pos // n_col
         x = pos - y * n_col
         l, h = slices[k]
@@ -101,12 +102,12 @@ def draw_layout(layout, slices, n_row, n_col):
 
 
 
-def isolated_cell(c_used, x, y, n_row, n_col):
+def isolated_cell(c_empty, x, y, n_row, n_col):
     """
     Checks if there is a border or a filled cell to the left or down the (x,y).
     If so, then the cell is isolated and nothing would fit there.
     """
-    if ((x+1 >= n_col) or bool(c_used[x+1 + y * n_col])) and ((y+1 >= n_row) or bool(c_used[x + (y+1) * n_col])):
+    if ((x+1 >= n_col) or not c_empty[x+1 + y * n_col]) and ((y+1 >= n_row) or not c_empty[x + (y+1) * n_col]):
         return True
     return False
 
@@ -118,14 +119,14 @@ def exceeds_boundary(x, y, l, h, n_row, n_col):
     return (x+l > n_col) or (y+h > n_row)
 
 
-def collides_w_used(c_used, x, y, l, h):
+def collides_w_used(c_empty, x, y, l, h):
     """
-    Checks, if the slice (l, h) placed at (x, y) would overlap with one of the used pizza cells
+    Checks, if the slice (l, h) placed at (x, y) would overlap with one of the non-empty pizza cells
     """
     for i in range(y, y+h):
         for j in range(x, x+l):
             c = j + i * n_col
-            if c_used[c]:
+            if not c_empty[c]:
                 return True
     return False
 
@@ -151,22 +152,23 @@ def enough_contents(pizza, _L, x, y, l, h):
 
 def fill_empty_used(layout, slices, n_col):
     """
-    The procedure fills lists 'c_empty' and 'c_used' based on the input layout
+    The procedure fills lists 'c_empty' and 'c_slice' based on the input layout
     """
-    c_empty = [1 for _ in range(n_row * n_col)]
-    c_used = [0 for _ in range(n_row * n_col)]
+    c_empty = [True for _ in range(n_row * n_col)]
+    c_slice = [-1 for _ in range(n_row * n_col)]
 
-    for pos, k in layout:
+    for pos in layout:
+        k = layout[pos]
         y = pos // n_col
         x = pos - y * n_col
         l, h = slices[k]
         for i in range(y, y+h):
             for j in range(x, x+l):
                 c = j + i * n_col
-                c_used[c] = 1
-                c_empty[c] = 0
+                c_slice[c] = pos
+                c_empty[c] = False
 
-    return c_empty, c_used
+    return c_empty, c_slice
 
 
 def generate_layout(layout, slices, n_col, n_row):
@@ -175,17 +177,19 @@ def generate_layout(layout, slices, n_col, n_row):
     Input layout might empty or filled to some extent.
     Input layout is assumed to be correct, such that none of slices do exceed the boundary, overlap with other slices, or do not satisfy the contents condition.
 
-    layout  --  gene of an individual encoded as tuples (pos, k)
-                pos is the position on the pizza, 0 <= pos <= n_col * n_row - 1
-                k is the index of slice that has its upper left cell at this pos
+    layout, dict of int: int
+        gene of an individual encoded as pos: k
+        pos is the position on the pizza, 0 <= pos <= n_col * n_row - 1
+        k is the index of slice that has its upper left cell at this pos
 
+    c_empty, list[bool] 
+        list of all pizza cells; True when a cell is empty and False otherwise
 
-    c_empty --  cells that are empty and a slice can use them
-    c_used  --  cells that are occupied by either a slice, or by randomly assigned unused cell
-                it might be necessary in future to have a different list for unused cells
+    c_slice, list[int]
+        list of all pizza cells; if cell is not empty, element is the 'pos' from layout that occupies this cell; otherwise, -1
     """
 
-    c_empty, c_used = fill_empty_used(layout, slices, n_col)
+    c_empty, c_slice = fill_empty_used(layout, slices, n_col)
     
     for pos in range(n_row * n_col):
         if not c_empty[pos]:
@@ -194,13 +198,13 @@ def generate_layout(layout, slices, n_col, n_row):
         # # First, prove that this is necessary
         # if random.random() < 0.1:
         #     print("Randomly skipping %d"%pos)
-        #     c_used[pos] = 1
+        #     c_slice[pos] = 1
         #     c_empty[pos] = 0
         #     continue
         
         y = pos // n_col
         x = pos - y * n_col
-        if isolated_cell(c_used, x, y, n_row, n_col):
+        if isolated_cell(c_empty, x, y, n_row, n_col):
             # cell 'pos' is isolated. Nothing can be fitted here, skipping.
             # print(" - pos=%d is isolated. Skipping it."%pos)
             continue
@@ -210,19 +214,19 @@ def generate_layout(layout, slices, n_col, n_row):
         random.shuffle(i_slice)
         for k in i_slice:
             l, h = slices[k]
-            if exceeds_boundary(x, y, l, h, n_row, n_col) or collides_w_used(c_used, x, y, l, h) or not enough_contents(pizza, _L, x, y, l, h):
+            if exceeds_boundary(x, y, l, h, n_row, n_col) or collides_w_used(c_empty, x, y, l, h) or not enough_contents(pizza, _L, x, y, l, h):
                 # Impossible to place slice k here
                 continue
             else:
                 # Placing the slice
-                layout.append((pos, k))
+                layout[pos] = k
                 for i in range(y, y+h):
                     for j in range(x, x+l):
                         c = j + i * n_col
-                        c_used[c] = 1
-                        c_empty[c] = 0
+                        c_slice[c] = pos
+                        c_empty[c] = False
                 break
-    return c_empty, c_used, layout
+    return c_empty, c_slice, layout
 
 
 
@@ -234,12 +238,12 @@ if __name__ == "__main__":
         print(i, slices[i])
 
     print("Max score is %d"%(n_col * n_row))
-    layout = []
 
-    c_empty, c_used, layout = generate_layout(layout, slices, n_col, n_row)
+    layout = {}
+    c_empty, c_slice, layout = generate_layout(layout, slices, n_col, n_row)
             
     efficiency = 100 * (1 - sum(c_empty) / n_row / n_col)
-    print("The efficiency of the created layout = %5.2f%%; score is %d"%(efficiency, sum(c_used)))
+    print("The efficiency of the created layout = %5.2f%%; score is %d"%(efficiency, n_col * n_row - sum(c_empty)))
     # print(layout)
 
     draw_pizza(pizza)
