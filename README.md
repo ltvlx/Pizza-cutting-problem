@@ -18,7 +18,11 @@ The solution would be to optimize the layout of slices using genetic algorithm.
 * ~~Layout drawer~~
 * ~~Generalized layout generator that can start from an incomplete layout~~
 * Crossover procedure
-* Mutation procedure
+* ~~Mutation procedure~~  
+Implemented the procedure from the ideas below.  
+Tests on __medium__ input show an increase in efficiency from 95.90% to 96.70% in 1000 iterations.  
+Over those iterations, blocks of empty cells have became smaller, but were not removed completely.  
+In the case of __big__ input, the growth of efficiency is a lot smaller and the calcualtions are slower.
 * Put everything inside a Class environment to avoid passing problem parameters within procedures
 
 ### Open questions:
