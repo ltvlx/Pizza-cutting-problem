@@ -2,7 +2,7 @@ import random
 import codecs
 import numpy as np
 import matplotlib.pyplot as plt
-random.seed(0)
+# random.seed(0)
 
 
 def read_setup(fname):
@@ -111,14 +111,14 @@ def isolated_cell(c_empty, x, y, n_row, n_col):
     return False
 
 
-def exceeds_boundary(x, y, l, h, n_row, n_col):
+def exceeds_boundary(x, y, l, h, n_col, n_row):
     """
     Checks, if the slice (l, h) placed at (x, y) would exceed one of the pizza boundaries
     """
     return (x+l > n_col) or (y+h > n_row)
 
 
-def collides_w_used(c_empty, x, y, l, h):
+def collides_w_used(c_empty, x, y, l, h, n_col):
     """
     Checks, if the slice (l, h) placed at (x, y) would overlap with one of the non-empty pizza cells
     """
@@ -149,7 +149,7 @@ def enough_contents(pizza, _L, x, y, l, h):
     return (T >= _L) and (M >= _L)
 
 
-def fill_empty_used(layout, slices, n_col):
+def fill_empty_used(layout, slices, n_col, n_row):
     """
     The procedure fills lists 'c_empty' and 'c_slice' based on the input layout
     """
@@ -170,7 +170,7 @@ def fill_empty_used(layout, slices, n_col):
     return c_empty, c_slice
 
 
-def generate_layout(layout, slices, n_col, n_row):
+def generate_layout(pizza, _L, layout, slices, n_col, n_row):
     """
     Procedure generates a new layout of slices based on the one in input.
     Input layout might empty or filled to some extent.
@@ -188,7 +188,7 @@ def generate_layout(layout, slices, n_col, n_row):
         list of all pizza cells; if cell is not empty, element is the 'pos' from layout that occupies this cell; otherwise, -1
     """
 
-    c_empty, c_slice = fill_empty_used(layout, slices, n_col)
+    c_empty, c_slice = fill_empty_used(layout, slices, n_col, n_row)
     
     for pos in range(n_row * n_col):
         if not pos in c_empty:
@@ -206,7 +206,7 @@ def generate_layout(layout, slices, n_col, n_row):
         random.shuffle(i_slice)
         for k in i_slice:
             l, h = slices[k]
-            if exceeds_boundary(x, y, l, h, n_row, n_col) or collides_w_used(c_empty, x, y, l, h) or not enough_contents(pizza, _L, x, y, l, h):
+            if exceeds_boundary(x, y, l, h, n_col, n_row) or collides_w_used(c_empty, x, y, l, h, n_col) or not enough_contents(pizza, _L, x, y, l, h):
                 # Impossible to place slice k here
                 continue
             else:
@@ -222,7 +222,7 @@ def generate_layout(layout, slices, n_col, n_row):
 
 
 if __name__ == "__main__":
-    pizza, n_row, n_col, _L, _H = read_setup("input/test.in") # a_example  b_small  c_medium  d_big
+    pizza, n_row, n_col, _L, _H = read_setup("input/c_medium.in") # a_example  b_small  c_medium  d_big
     slices = generate_possible_slices(_L, _H)
 
     for i in range(len(slices)):
@@ -231,11 +231,35 @@ if __name__ == "__main__":
     print("Max score is %d"%(n_col * n_row))
 
     layout = {}
-    c_empty, c_slice, layout = generate_layout(layout, slices, n_col, n_row)
+    c_empty, c_slice, layout = generate_layout(pizza, _L, layout, slices, n_col, n_row)
             
     efficiency = 100 * (1 - len(c_empty) / n_row / n_col)
     print("The efficiency of the created layout = %5.2f%%; score is %d"%(efficiency, n_col * n_row - len(c_empty)))
     # print(layout)
+    # print(c_empty)
 
     draw_pizza(pizza)
     draw_layout(layout, slices, n_row, n_col)
+
+    import mutations as mtns
+
+
+    print("Now mutating:")
+    for i in range(1000):
+        _lay = dict(layout)
+        _empty, _slice = set(c_empty), list(c_slice)
+        if not c_empty:
+            print("Maximum efficiency achieved!")
+            print(layout)
+            break
+
+        _empty, _slice, _lay = mtns.mutate(pizza, _L, _lay, slices, _empty, _slice, n_col, n_row)
+        _eff = 100 * (1 - len(_empty) / n_row / n_col)
+        if _eff > efficiency:
+            print("#%d,  %5.2f%% --> %5.2f%%"%(i, efficiency, _eff))
+            layout = _lay
+            efficiency = _eff
+            c_slice = _slice
+            c_empty = _empty
+
+    draw_layout(_lay, slices, n_row, n_col)
