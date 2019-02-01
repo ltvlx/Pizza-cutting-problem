@@ -16,9 +16,11 @@ The solution would be to optimize the layout of slices using genetic algorithm.
 * ~~Field drawer~~
 * ~~Layout drawer~~
 * ~~Generalized layout generator that can start from an incomplete layout~~
-* Crossover procedure
-* ~~Mutation procedure~~  
+* ~~Mutation procedure~~
 * ~~Put everything inside a Class environment to avoid passing problem parameters within procedures~~
+* Crossover procedure
+* Selection procedure
+* Procedure to create generations
 
 
 ### Open questions:
