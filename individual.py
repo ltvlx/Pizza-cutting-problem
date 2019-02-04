@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 # random.seed(0)
 
+
 def read_setup(fname):
     """
     Reading the setup from the input file 'fname'.
@@ -310,6 +311,35 @@ class Individual:
         return "<%6.3f%%, %d>"%(self.efficiency(), self.score())
 
 
+def recombine(ind_A, ind_B, pizza):
+    """
+    Creates two new indivuduals based on parents ind_A and ind_B
+
+    Scheme:
+    1. get random vertical and horizontal (s_v, s_h) lines that split both individuals in four non-empty sectors:
+         c_v
+        1x|2xxx
+        xx|xxxx
+     c_h--+----
+        3x|4xxx
+        xx|xxxx
+    
+    2. For each individual, create random sub-layouts that strictly fall into each of four sectors:
+        ind_A_1, ind_A_2, ind_A_3, ind_A_4, ind_B_1, ...
+
+    3. Randomly choose a pattern for rotation:
+        [1, 2, 3, 4, 12, 13, 14]
+        others are not necessary, because pattern 123 == 4
+
+    4. Create new individuals by merging according to the chosen pattern:
+        e.g. pattern = 12
+        ind_C = ind_A_1 + ind_A_2 + ind_B_3 + ind_B_4
+        ind_D = ind_B_1 + ind_B_2 + ind_A_3 + ind_A_4
+
+    """
+
+
+
 
 if __name__ == "__main__":
     pizza, n_row, n_col, L, H = read_setup("input/c_medium.in") # a_example  b_small  c_medium  d_big
@@ -320,12 +350,14 @@ if __name__ == "__main__":
     draw_pizza(pizza)
 
     A = Individual({}, slices, n_col, n_row, L, H)
-    A.fill_layout(pizza)
+    # A.fill_layout(pizza)
     print(A)
 
-    A.mutate(pizza)
-    print("After a mutation:")
-    print(A)
-    # A.draw_layout()
+    recombine(A, A, pizza)
+
+    # A.mutate(pizza)
+    # print("After a mutation:")
+    # print(A)
+    # # A.draw_layout()
 
 
