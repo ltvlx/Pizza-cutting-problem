@@ -2,7 +2,8 @@ import random
 import codecs
 import numpy as np
 import matplotlib.pyplot as plt
-# random.seed(0)
+from sublayout import get_sublayout_n
+random.seed(0)
 
 
 def read_setup(fname):
@@ -337,12 +338,59 @@ def recombine(ind_A, ind_B, pizza):
         ind_D = ind_B_1 + ind_B_2 + ind_A_3 + ind_A_4
 
     """
+    n_col = ind_A.n_col
+    n_row = ind_A.n_row
+    slices = ind_A.slices
+
+    s_v = random.randint(1, n_col-1)
+    s_h = random.randint(1, n_row-1)
+
+    pattern = random.choice(['left', 'upper', 'upper-left', 'upper-right', 'bottom-left', 'bottom-right', 'cross'])
+    lay_A_1, lay_A_2 = {}, {}
+    for pos, k in ind_A.layout.items():
+        y = pos // n_col
+        x = pos - y * n_col
+        wi, he = slices[k]
+        n = get_sublayout_n(pattern, x, y, wi, he, s_v, s_h)
+        if n == 1:
+            lay_A_1[pos] = k
+        elif n == 2:
+            lay_A_2[pos] = k
+
+    lay_B_1, lay_B_2 = {}, {}
+    for pos, k in ind_B.layout.items():
+        y = pos // n_col
+        x = pos - y * n_col
+        wi, he = slices[k]
+        n = get_sublayout_n(pattern, x, y, wi, he, s_v, s_h)
+        if n == 1:
+            lay_B_1[pos] = k
+        elif n == 2:
+            lay_B_2[pos] = k
+
+    lay_C = {**lay_A_1, **lay_B_2}
+    lay_D = {**lay_A_2, **lay_B_1}
+
+    print(s_v, s_h, pattern)
+    print(ind_A.layout)
+    print(ind_B.layout)
+    print(lay_C)
+    print(lay_D)
+
+    C = Individual(lay_C, slices, n_col, n_row, ind_A.L, ind_A.H)
+    C.fill_layout(pizza)
+    print(C)
+    D = Individual(lay_D, slices, n_col, n_row, ind_A.L, ind_A.H)
+    D.fill_layout(pizza)
+    print(D)
+
+
 
 
 
 
 if __name__ == "__main__":
-    pizza, n_row, n_col, L, H = read_setup("input/c_medium.in") # a_example  b_small  c_medium  d_big
+    pizza, n_row, n_col, L, H = read_setup("input/b_small.in") # a_example  b_small  c_medium  d_big
     slices = generate_possible_slices(L, H)
     # print("Max score is %d"%(n_col * n_row))
     # for i in range(len(slices)):
@@ -350,10 +398,15 @@ if __name__ == "__main__":
     draw_pizza(pizza)
 
     A = Individual({}, slices, n_col, n_row, L, H)
-    # A.fill_layout(pizza)
+    A.fill_layout(pizza)
     print(A)
 
-    recombine(A, A, pizza)
+    B = Individual({}, slices, n_col, n_row, L, H)
+    B.fill_layout(pizza)
+    print(B)
+
+    for _ in range(10):
+        recombine(A, B, pizza)
 
     # A.mutate(pizza)
     # print("After a mutation:")
