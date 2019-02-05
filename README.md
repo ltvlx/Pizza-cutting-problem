@@ -7,7 +7,7 @@ The solution would be to optimize the layout of slices using genetic algorithm.
 1. Generate the initial population by going through the pizza cells and trying to put each slice in a random order.  
    The direction of walking is left-to-right, up-to-down.
 2. Calculate the scores of each individual as the number of used cells
-3. Select x% best and create a new generation via crossovers and mutations
+3. Select x% best and create a new generation via recombinations and mutations
 4. Repeat operations 2-3 until the exit criterion is not satisfied.
 
 
@@ -18,31 +18,30 @@ The solution would be to optimize the layout of slices using genetic algorithm.
 * ~~Generalized layout generator that can start from an incomplete layout~~
 * ~~Mutation procedure~~
 * ~~Put everything inside a Class environment to avoid passing problem parameters within procedures~~
-* Crossover procedure
+* ~~Recombination procedure~~
 * Selection procedure
 * Procedure to create generations
 
 
 ### Open questions:
-How to crossover two individuals?
-How to mutate an individual?  
 Why would the ideas below lead to the convergence?  
 Why wouldn't it force to converge to a local maximum?  
-How to formulate the idea of keeping the densely-filled areas of a layout when performing a crossover?  
+How to formulate the idea of keeping the densely-filled areas of a layout when performing a recombination?  
 
-Idea of mutations:  
+Idea of mutations (implemented):
 Go through some of unused cells and remove adjacent slices. Then, try to fill them again.
 This would help to reconfigure slices near the area, where cells became unreachable.
 
-Idea of crossovers 1:  
+Idea of recombination 1 (implemented):
+Adaptation of one-point crossover procedure from [1] (see p. 53).  
+* Select a horizontal and a vertical line that split the pizza in 4 non-empty pieces.
+* Select a pattern of picking 2 zones out of that 4 pieces. There are 7 unique ways of picking those zones. 
+* For each of two individuals A and B, put all slices that lie strictly within zone 1 and zone 2 into separate sub-layouts A_1, A_2, B_1, and B_2. Slices that intersect the lines are dropped.  
+* Create new layouts by combining A_1 with B_2 and B_1 with A_2. Fill the gaps created by dropped slices.
+
+Idea of recombination 2:  
 Encode layout (genotype) as a dictionary {position: 'k-th slice'}. From the best x%, select two random individuals A and B. Calculate all their common genes (pos, k) pairs and remove y% of them + z% of other genes.
 
-Idea of crossovers 2:  
-Adaptation of one-point crossover procedure from [1] (see p. 53).  
-Select a horizontal or a vertical line such that it splits pizza in two non-empty pieces.
-For each of two individuals A and B, select sub-layouts for which slices lie strictly within the left or right piece.
-Those slices intersecting the line are dropped.  
-Combine left_A with right_B and left_B with right_A, fill the gaps between lefts and rights.
 
 
 ### Additional thoughts:

@@ -1,6 +1,6 @@
 def get_sublayout_n(pattern, x, y, wi, he, s_v, s_h):
     """
-    A function that returns the sublayout number for the given input pattern key
+        A function that returns the sublayout number for the given input pattern key
     """
     if pattern == "left":
         if (x < s_v and x+wi-1 < s_v):
