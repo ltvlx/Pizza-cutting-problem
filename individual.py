@@ -2,6 +2,7 @@ import random
 import codecs
 import numpy as np
 import matplotlib.pyplot as plt
+import json
 from sublayout import get_sublayout_n
 # random.seed(0)
 
@@ -172,7 +173,7 @@ class Individual:
             Draws the image of the layout into the 'fname' as 2D colormap
             Input layout is assumed to be correct (slices are within the pizza boundaries)
         """
-        mtr = np.zeros((n_row, n_col), dtype=int)
+        mtr = np.zeros((self.n_row, self.n_col), dtype=int)
 
         for pos in self.layout:
             k = self.layout[pos]
@@ -185,7 +186,7 @@ class Individual:
         
         scale = 10.0 / max(self.n_row, self.n_col)
 
-        plt.figure(figsize=(n_row * scale, n_col * scale))
+        plt.figure(figsize=(self.n_row * scale, self.n_col * scale))
         plt.imshow(mtr, cmap='YlOrBr_r')
         plt.gca().axes.get_xaxis().set_visible(False)
         plt.gca().axes.get_yaxis().set_visible(False)
@@ -203,6 +204,9 @@ class Individual:
             3. Remove all slices that are adjacent to the cluster
             4. Fill the layout again
         """
+        if not self.empty:
+            return
+
         pos_start = random.choice(tuple(self.empty))
 
         _, to_remove = self.__get_adjacent(pos_start, visited=set(), to_remove=set())
@@ -275,9 +279,9 @@ class Individual:
             elif n == 2:
                 B_2[pos] = k
 
-        C = Individual({**A_1, **B_2}, slices, n_col, n_row, self.L, self.H)
+        C = Individual({**A_1, **B_2}, self.slices, self.n_col, self.n_row, self.L, self.H)
         C.fill_layout(pizza)
-        D = Individual({**A_2, **B_1}, slices, n_col, n_row, self.L, self.H)
+        D = Individual({**A_2, **B_1}, self.slices, self.n_col, self.n_row, self.L, self.H)
         D.fill_layout(pizza)
         return C, D
 
@@ -289,6 +293,14 @@ class Individual:
     def score(self):
         return self.n_col * self.n_row - len(self.empty)
 
+
+    def copy(self):
+        return Individual(self.layout, self.slices, self.n_col, self.n_row, self.L, self.H)
+
+
+    def dump_layout(self, fname):
+        with codecs.open(fname, 'w') as fout:
+            json.dump(self.layout, fout)
 
     ###########################################################################
 
@@ -372,7 +384,8 @@ class Individual:
     def __str__(self):
         return "<%6.3f%%, %d>"%(self.efficiency(), self.score())
 
-
+    def __repr__(self):
+        return str(self)
 
 
 
