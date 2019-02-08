@@ -13,5 +13,5 @@ In the case of __big__ input, the growth of efficiency is a lot smaller and the 
 
 # Test of the recombination procedure
 For both __medium__ and __big__ problem size, recombination on average shows a huge dropdown of efficiency in child individuals compared to the parents. 
-![recombine_med](recombination_tests/recombination_test_medium.png)
-![recombine_big](recombination_tests/recombination_test_big.png)
+![recombine_med](recombination-0_tests/recombination_test_medium.png)
+![recombine_big](recombination-0_tests/recombination_test_big.png)
