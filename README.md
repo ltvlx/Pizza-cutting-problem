@@ -43,6 +43,8 @@ Idea of recombination 2:
 Encode layout (genotype) as a dictionary {position: 'k-th slice'}. From the best x%, select two random individuals A and B. Calculate all their common genes (pos, k) pairs and remove y% of them + z% of other genes.
 
 
+### Links to the tests of methods:
+[See link](tests/README.md)
 
 ### Additional thoughts:
 * ~~Some cells might be unreachable. Write an algorithm that calculates them and then just ignore them?~~  
@@ -66,6 +68,9 @@ https://github.com/fabiofdsantos/2d-cutting-stock-problem
 
 Knapsack problem solved via genetic algorithm:  
 http://www.nils-haldenwang.de/computer-science/computational-intelligence/genetic-algorithm-vs-0-1-knapsack
+
+Cython documentation  
+https://cython.org/#documentation
 
 
 [1] A. E. Eiben and J. E. Smith, __Introduction to Evolutionary Computing__, 2nd ed. Springer, 2015
