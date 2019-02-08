@@ -15,3 +15,5 @@ In the case of __big__ input, the growth of efficiency is a lot smaller and the 
 For both __medium__ and __big__ problem size, recombination on average shows a huge dropdown of efficiency in child individuals compared to the parents. 
 ![recombine_med](recombination-0_tests/recombination_test_medium.png)
 ![recombine_big](recombination-0_tests/recombination_test_big.png)
+<img src="https://github.com/ltvlx/Pizza-cutting-problem/blob/master/tests/recombination-0_tests/recombination_test_big.png" width="300">
+<img src="recombination-0_tests/recombination_test_big.png" width="300">
