@@ -157,5 +157,5 @@ for i in range(i_start+1, G_max):
 save_population(population, i)
 with codecs.open("results_medium/opt_convergence.txt", "a") as fout:
     for i, eff in scores:
-        fout.write("%s; %6.3f"%(i2s(i, 4), eff_max))
+        fout.write("%s; %6.3f\n"%(i2s(i, 4), eff_max))
 

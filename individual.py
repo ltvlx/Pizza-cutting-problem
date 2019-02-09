@@ -118,11 +118,11 @@ class Individual:
         self.slices = slices
         
 
-        for pos in lay:
-            k = lay[pos]
-            y = pos // n_col
-            x = pos - y * n_col
-            wi, he = slices[k]
+        for pos in self.layout:
+            k = self.layout[pos]
+            y = pos // self.n_col
+            x = pos - y * self.n_col
+            wi, he = self.slices[k]
             for i in range(y, y+he):
                 for j in range(x, x+wi):
                     c = j + i * n_col
@@ -164,7 +164,8 @@ class Individual:
                         for j in range(x, x + wi):
                             c = j + i * self.n_col
                             self.s_pos_map[c] = pos
-                            self.empty.discard(c)
+                            self.empty.remove(c)
+                            # self.empty.discard(c)
                     break
 
 
@@ -302,6 +303,33 @@ class Individual:
         with codecs.open(fname, 'w') as fout:
             json.dump(self.layout, fout)
 
+    def check_correctness(self, pizza):
+        """
+            Checks the correctness of current layout
+        """
+        self.empty = set([i for i in range(self.n_row * self.n_col)])
+        for pos in self.layout:
+            k = self.layout[pos]
+            wi, he = self.slices[k]
+
+            y = pos // self.n_col
+            x = pos - y * self.n_col
+
+            if self.__exceeds_boundary(x, y, wi, he) or \
+                self.__collides_w_used(x, y, wi, he) or \
+                not self.__enough_contents(pizza, x, y, wi, he):
+                return False
+            else:
+                for i in range(y, y + he):
+                    for j in range(x, x + wi):
+                        c = j + i * self.n_col
+                        if not c in self.empty:
+                            print("is used")
+                            return False
+                        self.empty.remove(c)
+        return True
+
+
     ###########################################################################
 
     def __isolated_cell(self, x, y):
@@ -387,9 +415,17 @@ class Individual:
     def __repr__(self):
         return str(self)
 
+    def __lt__(self, other):
+        return self.score() < other.score()
 
+    def __le__(self, other):
+        return self.score() <= other.score()
 
+    def __gt__(self, other):
+        return self.score() > other.score()
 
+    def __ge__(self, other):
+        return self.score() >= other.score()
 
 
 
