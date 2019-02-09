@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 from sublayout import get_sublayout_n
-# random.seed(0)
+# random.seed()
 
 
 def read_setup(fname):
@@ -75,18 +75,18 @@ class Individual:
     """
         Representation of a solution to the problem (indivudual)
 
-            layout, dict of int: int
-        gene of an individual encoded as pos: k
-        'pos' is the position on the pizza, [0: n_col * n_row - 1]
+            layout, dict of (int, int): int
+        gene of an individual encoded as (x, y): k
+        (x, y) is the position on the pizza, ([0:n_col], [n_row])
         k is the index of slice that has its upper left cell at this pos
 
-            c_empty, set(int) 
-        set of all cells that are empty
+            c_empty, set((int, int)) 
+        set of all (x,y) cells that are empty
 
-            s_pos_map, list[int]
-        list of all cells, stores information about which slice occupies a cell;
-        if cell is empty, the value in list is -1
-        otherwise, it is the 'pos' from layout that occupies this cell
+            s_pos_map, dict of (int, int)
+        dict of all used cells, stores information about which slice occupies a cell;
+        if a cell is empty, it is not in this dict
+        otherwise, it is the (x,y) from layout that occupies this cell
 
             n_col, n_row, int
         number of columns and rows in pizza
@@ -102,32 +102,27 @@ class Individual:
     """
     layout = {}
     empty = set()
-    s_pos_map = []
+    slice_map = {}
     n_col, n_row = 0, 0
     L, H = 0, 0
     slices = []
 
     def __init__(self, lay, slices, n_col, n_row, L, H):
-        self.empty = set([i for i in range(n_row * n_col)])
-        self.s_pos_map = [-1 for _ in range(n_row * n_col)]
+        self.empty = set([(x, y) for x in range(n_col) for y in range(n_row)])
         self.layout = dict(lay)
         self.n_col = n_col
         self.n_row = n_row
         self.L = L
         self.H = H
         self.slices = slices
-        
 
-        for pos in self.layout:
-            k = self.layout[pos]
-            y = pos // self.n_col
-            x = pos - y * self.n_col
+        for (x, y) in self.layout:
+            k = self.layout[(x, y)]
             wi, he = self.slices[k]
-            for i in range(y, y+he):
-                for j in range(x, x+wi):
-                    c = j + i * n_col
-                    self.s_pos_map[c] = pos
-                    self.empty.discard(c)
+            for j in range(y, y+he):
+                for i in range(x, x+wi):
+                    self.slice_map[(i, j)] = (x, y)
+                    self.empty.discard((i, j))
 
 
     def fill_layout(self, pizza):
@@ -137,36 +132,30 @@ class Individual:
             overlap with other slices, or do not satisfy the contents condition.
         """
 
-        # can't be replaced with 'for pos in self.empty' as empty is modified in the loop
-        for pos in range(self.n_row * self.n_col):
-            if not pos in self.empty:
-                continue
-
-            y = pos // self.n_col
-            x = pos - y * self.n_col
-            if self.__isolated_cell(x, y):
-                continue
-
-            # Trying to place each type of slice in a random order
-            i_slice = [i for i in range(len(self.slices))]
-            random.shuffle(i_slice)
-            for k in i_slice:
-                wi, he = self.slices[k]
-                if self.__exceeds_boundary(x, y, wi, he) or \
-                    self.__collides_w_used(x, y, wi, he) or \
-                    not self.__enough_contents(pizza, x, y, wi, he):
-                    # Impossible to place slice k here
+        for y in range(self.n_row):
+            for x in range(self.n_col):
+                if not (x,y) in self.empty or self.__isolated_cell(x, y):
                     continue
-                else:
-                    # Placing the slice
-                    self.layout[pos] = k
-                    for i in range(y, y + he):
-                        for j in range(x, x + wi):
-                            c = j + i * self.n_col
-                            self.s_pos_map[c] = pos
-                            self.empty.remove(c)
-                            # self.empty.discard(c)
-                    break
+
+                # Trying to place each type of slice in a random order
+                i_slice = [i for i in range(len(self.slices))]
+                random.shuffle(i_slice)
+                for k in i_slice:
+                    wi, he = self.slices[k]
+                    if self.__exceeds_boundary(x, y, wi, he) or \
+                        self.__collides_w_used(x, y, wi, he) or \
+                        not self.__enough_contents(pizza, x, y, wi, he):
+                        # Impossible to place slice k here
+                        continue
+                    else:
+                        # Placing the slice
+                        self.layout[(x,y)] = k
+                        for j in range(y, y + he):
+                            for i in range(x, x + wi):
+                                self.slice_map[(i, j)] = (x, y)
+                                self.empty.remove((i, j))
+                                # self.empty.discard(c)
+                        break
 
 
     def draw_layout(self, fname="img_layout.pdf"):
@@ -176,10 +165,7 @@ class Individual:
         """
         mtr = np.zeros((self.n_row, self.n_col), dtype=int)
 
-        for pos in self.layout:
-            k = self.layout[pos]
-            y = pos // self.n_col
-            x = pos - y * self.n_col
+        for (x, y), k in self.layout.items():
             wi, he = self.slices[k]
             for i in range(y, y + he):
                 for j in range(x, x + wi):
@@ -200,29 +186,26 @@ class Individual:
     def mutate(self, pizza):
         """
             Mutate individual:
-            1. Pick a random empty cell 'pos_start'
-            2. Select the cluster of empty cells around 'pos_start'
+            1. Pick a random empty cell (sx, sy)
+            2. Select the cluster of empty cells around (sx, sy)
             3. Remove all slices that are adjacent to the cluster
             4. Fill the layout again
         """
         if not self.empty:
             return
 
-        pos_start = random.choice(tuple(self.empty))
+        sx, sy = random.choice(tuple(self.empty))
 
-        _, to_remove = self.__get_adjacent(pos_start, visited=set(), to_remove=set())
+        _, to_remove = self.__get_adjacent(sx, sy, visited=set(), to_remove=set())
 
-        for pos in to_remove:
-            k = self.layout.pop(pos)
+        for (x, y) in to_remove:
+            k = self.layout.pop((x, y))
 
-            y = pos // self.n_col
-            x = pos - y * self.n_col
             wi, he = self.slices[k]
-            for i in range(y, y + he):
-                for j in range(x, x + wi):
-                    c = j + i * self.n_col
-                    self.s_pos_map[c] = -1
-                    self.empty.add(c)
+            for j in range(y, y + he):
+                for i in range(x, x + wi):
+                    self.slice_map.pop((i, j))
+                    self.empty.add((i, j))
 
         self.fill_layout(pizza)
 
@@ -259,26 +242,22 @@ class Individual:
 
         pattern = random.choice(['left', 'upper', 'upper-left', 'upper-right', 'bottom-left', 'bottom-right', 'cross'])
         A_1, A_2 = {}, {}
-        for pos, k in self.layout.items():
-            y = pos // self.n_col
-            x = pos - y * self.n_col
+        for (x, y), k in self.layout.items():
             wi, he = self.slices[k]
             n = get_sublayout_n(pattern, x, y, wi, he, s_x, s_y)
             if n == 1:
-                A_1[pos] = k
+                A_1[(x,y)] = k
             elif n == 2:
-                A_2[pos] = k
+                A_2[(x,y)] = k
 
         B_1, B_2 = {}, {}
-        for pos, k in other.layout.items():
-            y = pos // self.n_col
-            x = pos - y * self.n_col
+        for (x,y), k in other.layout.items():
             wi, he = self.slices[k]
             n = get_sublayout_n(pattern, x, y, wi, he, s_x, s_y)
             if n == 1:
-                B_1[pos] = k
+                B_1[(x,y)] = k
             elif n == 2:
-                B_2[pos] = k
+                B_2[(x,y)] = k
 
         C = Individual({**A_1, **B_2}, self.slices, self.n_col, self.n_row, self.L, self.H)
         C.fill_layout(pizza)
@@ -303,30 +282,25 @@ class Individual:
         with codecs.open(fname, 'w') as fout:
             json.dump(self.layout, fout)
 
+
     def check_correctness(self, pizza):
         """
             Checks the correctness of current layout
         """
         self.empty = set([i for i in range(self.n_row * self.n_col)])
-        for pos in self.layout:
-            k = self.layout[pos]
+        for (x,y), k in self.layout.items():
             wi, he = self.slices[k]
-
-            y = pos // self.n_col
-            x = pos - y * self.n_col
 
             if self.__exceeds_boundary(x, y, wi, he) or \
                 self.__collides_w_used(x, y, wi, he) or \
                 not self.__enough_contents(pizza, x, y, wi, he):
                 return False
             else:
-                for i in range(y, y + he):
-                    for j in range(x, x + wi):
-                        c = j + i * self.n_col
-                        if not c in self.empty:
-                            print("is used")
+                for j in range(y, y + he):
+                    for i in range(x, x + wi):
+                        if not (i,j) in self.empty:
                             return False
-                        self.empty.remove(c)
+                        self.empty.remove((x,y))
         return True
 
 
@@ -337,8 +311,8 @@ class Individual:
             Checks if there is a border or a filled cell to the left of (x,y) AND down the (x,y).
             If so, then the cell is isolated and nothing would fit there.
         """
-        if ((x+1 >= self.n_col) or not (x+1 + y*self.n_col) in self.empty) and \
-            ((y+1 >= self.n_row) or not (x + (y+1)*self.n_col) in self.empty):
+        if ((x+1 >= self.n_col) or not (x+1, y) in self.empty) and \
+            ((y+1 >= self.n_row) or not (x, y+1) in self.empty):
             return True
         return False
 
@@ -354,10 +328,9 @@ class Individual:
         """
             Checks, if the slice (wi, he) placed at (x, y) would overlap with one of the non-empty pizza cells
         """
-        for i in range(y, y + he):
-            for j in range(x, x + wi):
-                c = j + i * self.n_col
-                if not c in self.empty:
+        for j in range(y, y + he):
+            for i in range(x, x + wi):
+                if not (i, j) in self.empty:
                     return True
         return False
 
@@ -378,7 +351,7 @@ class Individual:
         return (T >= self.L) and (M >= self.L)
 
 
-    def __get_adjacent(self, pos, visited, to_remove):
+    def __get_adjacent(self, x, y, visited, to_remove):
         """
             Finds all slices that are adjacent to the block of empty cells with the beginning at 'pos'
             
@@ -388,24 +361,26 @@ class Individual:
             to_remove, set(int)
                 set of adjacent slices positions, that will be removed during the mutation
         """
-        visited.add(pos)
+        visited.add((x,y))
 
-        if not pos in self.empty:
-            to_remove.add(self.s_pos_map[pos])
+        if not (x,y) in self.empty:
+            to_remove.add(self.slice_map[(x,y)])
             return visited, to_remove
 
         else:
             possible_moves = []
-            for p in [pos+1, pos-1]:
-                if pos // self.n_col == p // self.n_col:
-                    possible_moves.append(p)
-            for p in [pos + self.n_col, pos - self.n_col]:
-                if not (p // self.n_col  in [-1, self.n_row]):
-                        possible_moves.append(p)
+            if x+1 < self.n_col:
+                possible_moves.append((x+1,y))
+            if x-1 >= 0:
+                possible_moves.append((x-1,y))
+            if y+1 < self.n_row:
+                possible_moves.append((x,y+1))
+            if y-1 >= 0:
+                possible_moves.append((x,y-1))
 
-            for p in possible_moves:
-                if not p in visited:
-                    visited, to_remove = self.__get_adjacent(p, visited, to_remove)
+            for (x,y) in possible_moves:
+                if not (x, y) in visited:
+                    visited, to_remove = self.__get_adjacent(x, y, visited, to_remove)
             return visited, to_remove
 
 
@@ -430,7 +405,7 @@ class Individual:
 
 
 if __name__ == "__main__":
-    pizza, n_row, n_col, L, H = read_setup("input/d_big.in") # a_example  b_small  c_medium  d_big
+    pizza, n_row, n_col, L, H = read_setup("input/c_medium.in") # a_example  b_small  c_medium  d_big
     slices = generate_possible_slices(L, H)
     # print("Max score is %d"%(n_col * n_row))
     # for i in range(len(slices)):
@@ -441,34 +416,33 @@ if __name__ == "__main__":
     A.fill_layout(pizza)
     print(A)
 
-    B = Individual({}, slices, n_col, n_row, L, H)
-    B.fill_layout(pizza)
-    print(B)
+    # B = Individual({}, slices, n_col, n_row, L, H)
+    # B.fill_layout(pizza)
+    # print(B)
 
     # C, D = A.recombine(B, pizza)
     # print(C, D)
-
     # A.mutate(pizza)
     # print("After a mutation:")
-    # print(A)
-    # # A.draw_layout()
+    # print(i, A)
+    # A.draw_layout()
 
-    scores = []
-    for i in range(10):
-        print(i)
-        C, D = A.recombine(B, pizza)
-        scores.append(C.efficiency())
-        scores.append(D.efficiency())
+    # scores = []
+    # for i in range(10):
+    #     print(i)
+    #     C, D = A.recombine(B, pizza)
+    #     scores.append(C.efficiency())
+    #     scores.append(D.efficiency())
     
 
 
-    plt.figure(figsize=(6, 6))
+    # plt.figure(figsize=(6, 6))
 
-    plt.hist(scores, bins=20)
-    plt.plot([A.efficiency()]*2, [0, 10], c='black')
-    plt.plot([B.efficiency()]*2, [0, 10], c='black')
+    # plt.hist(scores, bins=20)
+    # plt.plot([A.efficiency()]*2, [0, 10], c='black')
+    # plt.plot([B.efficiency()]*2, [0, 10], c='black')
 
-    plt.savefig("recombination_test.pdf", bbox_inches='tight')
-    plt.savefig("recombination_test.png", bbox_inches='tight', dpi=300)
-    plt.show()
+    # plt.savefig("recombination_test.pdf", bbox_inches='tight')
+    # plt.savefig("recombination_test.png", bbox_inches='tight', dpi=300)
+    # plt.show()
 

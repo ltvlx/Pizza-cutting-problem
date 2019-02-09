@@ -6,10 +6,10 @@ from individual import Individual
 random.seed(0)
 
 
-resume = True
-i_start = 3250
-G_max = 3500
-P = 400
+resume = False
+i_start = 0
+G_max = 100
+P = 20
 c_par = 0.20
 c_rec = 0.30
 c_mut = 0.50
