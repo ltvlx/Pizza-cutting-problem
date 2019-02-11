@@ -20,7 +20,7 @@ For both __medium__ and __big__ problem size, recombination on average shows a h
 | medium-size problem | big-size problem |
 
 ### Random filling schemes: 
-[(l->r, u->d), (u->d, l->r), (r->l, d->u), (d->u, r->l)]
+[(l->r, u->d), (u->d, l->r), (r->l, d->u), (d->u, r->l)]  
 Due to the pattern of filling, the first two schemes are more efficient, resulting in average efficiency of 95% for medium problem size. 
 It the case of two latter schemes, an average efficiency is around 91%.
 
