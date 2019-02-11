@@ -125,37 +125,38 @@ class Individual:
                     self.empty.discard((i, j))
 
 
-    def fill_layout(self, pizza):
+    def fill_layout(self, pizza, direction='random'):
         """
             Procedure fills the Individual layout, which might empty or filled to some extent.
             Input layout is assumed to be correct, such that none of slices do exceed the boundary, 
             overlap with other slices, or do not satisfy the contents condition.
         """
+        if direction == 'random':
+            direction = random.choice(['lrud', 'udlr', 'rldu', 'durl'])
 
-        for y in range(self.n_row):
-            for x in range(self.n_col):
-                if not (x,y) in self.empty or self.__isolated_cell(x, y):
+        for (x, y) in self.__generate_walk(direction):
+            if not (x,y) in self.empty or self.__isolated_cell(x, y):
+                continue
+
+            # Trying to place each type of slice in a random order
+            i_slice = [i for i in range(len(self.slices))]
+            random.shuffle(i_slice)
+            for k in i_slice:
+                wi, he = self.slices[k]
+                if self.__exceeds_boundary(x, y, wi, he) or \
+                    self.__collides_w_used(x, y, wi, he) or \
+                    not self.__enough_contents(pizza, x, y, wi, he):
+                    # Impossible to place slice k here
                     continue
-
-                # Trying to place each type of slice in a random order
-                i_slice = [i for i in range(len(self.slices))]
-                random.shuffle(i_slice)
-                for k in i_slice:
-                    wi, he = self.slices[k]
-                    if self.__exceeds_boundary(x, y, wi, he) or \
-                        self.__collides_w_used(x, y, wi, he) or \
-                        not self.__enough_contents(pizza, x, y, wi, he):
-                        # Impossible to place slice k here
-                        continue
-                    else:
-                        # Placing the slice
-                        self.layout[(x,y)] = k
-                        for j in range(y, y + he):
-                            for i in range(x, x + wi):
-                                self.slice_map[(i, j)] = (x, y)
-                                self.empty.remove((i, j))
-                                # self.empty.discard(c)
-                        break
+                else:
+                    # Placing the slice
+                    self.layout[(x,y)] = k
+                    for j in range(y, y + he):
+                        for i in range(x, x + wi):
+                            self.slice_map[(i, j)] = (x, y)
+                            self.empty.remove((i, j))
+                            # self.empty.discard(c)
+                    break
 
 
     def draw_layout(self, fname="img_layout.pdf"):
@@ -207,7 +208,7 @@ class Individual:
                     self.slice_map.pop((i, j))
                     self.empty.add((i, j))
 
-        self.fill_layout(pizza)
+        self.fill_layout(pizza, 'random')
 
 
     def recombine(self, other, pizza):
@@ -260,9 +261,9 @@ class Individual:
                 B_2[(x,y)] = k
 
         C = Individual({**A_1, **B_2}, self.slices, self.n_col, self.n_row, self.L, self.H)
-        C.fill_layout(pizza)
+        C.fill_layout(pizza, 'random')
         D = Individual({**A_2, **B_1}, self.slices, self.n_col, self.n_row, self.L, self.H)
-        D.fill_layout(pizza)
+        D.fill_layout(pizza, 'random')
         return C, D
 
 
@@ -280,7 +281,8 @@ class Individual:
 
     def dump_layout(self, fname):
         with codecs.open(fname, 'w') as fout:
-            json.dump(self.layout, fout)
+            for (x, y), k in self.layout.items():
+                fout.write("%4d, %4d, %2d\n"%(x, y, k))
 
 
     def check_correctness(self, pizza):
@@ -351,6 +353,28 @@ class Individual:
         return (T >= self.L) and (M >= self.L)
 
 
+    def __generate_walk(self, direction='lrud'):
+        """
+            Returns the generator of (x,y) pairs in the direction defined by 'key' parameter
+        """
+        if direction == 'lrud':
+            for y in range(self.n_row):
+                for x in range(self.n_col):
+                    yield (x, y)
+        elif direction == 'udlr':
+            for x in range(self.n_col):
+                for y in range(self.n_row):
+                    yield (x, y)
+        elif direction == 'rldu':
+            for y in range(self.n_row-1, -1, -1):
+                for x in range(self.n_col-1, -1, -1):
+                    yield (x, y)
+        elif direction == 'durl':
+            for x in range(self.n_col-1, -1, -1):
+                for y in range(self.n_row-1, -1, -1):
+                    yield (x, y)
+
+
     def __get_adjacent(self, x, y, visited, to_remove):
         """
             Finds all slices that are adjacent to the block of empty cells with the beginning at 'pos'
@@ -419,6 +443,12 @@ if __name__ == "__main__":
     # B = Individual({}, slices, n_col, n_row, L, H)
     # B.fill_layout(pizza)
     # print(B)
+
+    for direct in ['lrud', 'udlr', 'rldu', 'durl']:
+        B = Individual({}, slices, n_col, n_row, L, H)
+        B.fill_layout(pizza, direct)
+        print(direct, B)
+        B.draw_layout('lay_%s.pdf'%direct)
 
     # C, D = A.recombine(B, pizza)
     # print(C, D)

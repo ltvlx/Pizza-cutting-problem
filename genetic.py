@@ -67,7 +67,7 @@ def make_next_generation(population, pizza):
     mating_pool = population[:int(c_par * P)]
 
     next_generation = []
-    for _ in range(int(c_rec * P)):
+    for _ in range(int(c_rec * P) // 2):
         A, B = random.sample(mating_pool, 2)
         C, D = A.recombine(B, pizza)
         next_generation += [C, D]
@@ -94,9 +94,9 @@ def make_next_generation(population, pizza):
 def save_population(population, G_n):
     res = []
     for ind in population:
-        res.append(ind.layout)
+        res.append(list(ind.layout.items()))
 
-    with codecs.open("results_medium/generations_backup/G%s.json"%i2s(G_n, 3), 'w') as fout:
+    with codecs.open("results_medium/generations_backup/G_%s.json"%i2s(G_n, 4), 'w') as fout:
         json.dump(res, fout)
 
 
@@ -105,10 +105,10 @@ def load_population(fname, slices, n_col, n_row, L, H, pizza):
     with codecs.open(fname, 'r') as fin:
         layouts = json.load(fin)
 
-    for lay in layouts:
+    for s_list in layouts:
         _lay = {}
-        for pos in lay:
-            _lay[int(pos)] = lay[pos]
+        for pos, k in s_list:
+            _lay[tuple(pos)] = k
         A = Individual(_lay, slices, n_col, n_row, L, H)
         population.append(A)
 
@@ -128,7 +128,8 @@ if resume == False:
     population.sort(key = lambda x: x.efficiency(), reverse=True)
 else:
     print("Continuing previous optimization.")
-    population = load_population("results_medium/generations_backup/G%s.json"%i2s(i_start), slices, n_col, n_row, L, H, pizza)
+    population = load_population("results_medium/generations_backup/G_%s.json"%i2s(i_start, 4), slices, n_col, n_row, L, H, pizza)
+    print(len(population), P)
     if len(population) < P:
         print("Loaded population is smaller than the given max population.\nExtending it with random individuals.")
         while len(population) < P:
@@ -136,7 +137,6 @@ else:
             A.fill_layout(pizza)
             population.append(A)
         population.sort(key = lambda x: x.efficiency(), reverse=True)
-
     elif len(population) > P:
         print("Loaded population is bigger than the given max population.\nRemoving the worst individuals.")
         population.sort(key = lambda x: x.efficiency(), reverse=True)
@@ -151,8 +151,8 @@ for i in range(i_start+1, G_max):
 
     print("%s; %6.3f%%"%(i2s(i, 4), eff_max))
 
-    population[0].dump_layout("results_medium/history_best/G%s_i001.json"%i2s(i, 4))
-
+    population[0].dump_layout("results_medium/history_best/G_%s_i001.txt"%i2s(i, 4))
+    print(len(population))
 
 save_population(population, i)
 with codecs.open("results_medium/opt_convergence.txt", "a") as fout:
