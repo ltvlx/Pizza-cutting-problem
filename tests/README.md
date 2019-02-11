@@ -25,7 +25,7 @@ Due to the pattern of filling, the first two schemes are more efficient, resulti
 It the case of two latter schemes, an average efficiency is around 91%.
 
 However, recombination for both of them still works inefficiently.
-| <img src="recombination-1_directions/recombination_good_dir.png.png" width="350">   | <img src="recombination-1_directions/recombination_bad_dir.png.png" width="350"> |
+| <img src="recombination-1_directions/recombination_good_dir.png" width="350">   | <img src="recombination-1_directions/recombination_bad_dir.png" width="350"> |
 | :---: | :---: |
 | recombination of two former scheme parents | recombination of two latter scheme parents |
 
