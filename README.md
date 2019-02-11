@@ -19,8 +19,8 @@ The solution would be to optimize the layout of slices using genetic algorithm.
 * ~~Mutation procedure~~
 * ~~Put everything inside a Class environment to avoid passing problem parameters within procedures~~
 * ~~Recombination procedure~~
-* Selection procedure
-* Procedure to create generations
+* ~~Selection procedure~~
+* ~~Procedure to create generations~~
 
 
 ### Open questions:
@@ -39,7 +39,13 @@ Adaptation of one-point crossover procedure from [1] (see p. 53).
 * For each of two individuals A and B, put all slices that lie strictly within zone 1 and zone 2 into separate sub-layouts A_1, A_2, B_1, and B_2. Slices that intersect the lines are dropped.  
 * Create new layouts by combining A_1 with B_2 and B_1 with A_2. Fill the gaps created by dropped slices.
 
+The recombination prduces individuals that are not exceeding the efficiency of their parents.  
+__How to improve the procedure of combining sub-layouts A_1 and B_2?__
+
 Idea of recombination 2:  
+Select a square block from indiviudal A's layout and swap it with the same block from individual B.  
+
+Idea of recombination 3:  
 Encode layout (genotype) as a dictionary {position: 'k-th slice'}. From the best x%, select two random individuals A and B. Calculate all their common genes (pos, k) pairs and remove y% of them + z% of other genes.
 
 
