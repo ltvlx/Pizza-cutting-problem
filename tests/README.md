@@ -30,4 +30,6 @@ However, recombination for both of them still works inefficiently.
 | :---: | :---: |
 | recombination of two former scheme parents | recombination of two latter scheme parents |
 
+### Reducing instead of removing
+The layout of the recombined indiviudals show that in the most cases the cut between slices can not be sucessfully filled after the recombination (see folder 'recombination-1_nofill/'). Possible solution: instead of removing slices that collide with a cut, try making them smaller so that they would fit.
 

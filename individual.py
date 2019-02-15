@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 from sublayout import get_sublayout_n
-# random.seed()
+random.seed(0)
 
 
 def read_setup(fname):
@@ -437,18 +437,37 @@ if __name__ == "__main__":
     draw_pizza(pizza)
 
     A = Individual({}, slices, n_col, n_row, L, H)
-    A.fill_layout(pizza)
+    A.fill_layout(pizza, 'lrud')
     print(A)
 
-    # B = Individual({}, slices, n_col, n_row, L, H)
     # B.fill_layout(pizza)
-    # print(B)
+    B = Individual({}, slices, n_col, n_row, L, H)
+    B.fill_layout(pizza, 'udlr')
+    print(B)
 
-    for direct in ['lrud', 'udlr', 'rldu', 'durl']:
-        B = Individual({}, slices, n_col, n_row, L, H)
-        B.fill_layout(pizza, direct)
-        print(direct, B)
-        B.draw_layout('lay_%s.pdf'%direct)
+    # for direct in ['lrud', 'udlr', 'rldu', 'durl']:
+    #     B = Individual({}, slices, n_col, n_row, L, H)
+    #     B.fill_layout(pizza, direct)
+    #     print(direct, B)
+    #     B.draw_layout('lay_%s.pdf'%direct)
+
+    C, D = A.recombine(B, pizza)
+    print(C, D)
+    A.draw_layout("A.pdf")
+    B.draw_layout("B.pdf")
+    C.draw_layout("C.pdf")
+    D.draw_layout("D.pdf")
+
+    C.fill_layout(pizza, 'random')
+    D.fill_layout(pizza, 'random')
+    C.draw_layout("C_f.pdf")
+    D.draw_layout("D_f.pdf")
+
+    # for direct in ['lrud', 'udlr', 'rldu', 'durl']:
+    #     B = Individual({}, slices, n_col, n_row, L, H)
+    #     B.fill_layout(pizza, direct)
+    #     print(direct, B)
+    #     B.draw_layout('lay_%s.pdf'%direct)
 
     # C, D = A.recombine(B, pizza)
     # print(C, D)
