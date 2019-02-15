@@ -184,7 +184,7 @@ class Individual:
         plt.close()
 
 
-    def mutate(self, pizza):
+    def mutate(self, pizza, levels=1):
         """
             Mutate individual:
             1. Pick a random empty cell (sx, sy)
@@ -197,16 +197,17 @@ class Individual:
 
         sx, sy = random.choice(tuple(self.empty))
 
-        _, to_remove = self.__get_adjacent(sx, sy, visited=set(), to_remove=set())
+        for _ in range(levels):
+            _, to_remove = self.__get_adjacent(sx, sy, visited=set(), to_remove=set())
 
-        for (x, y) in to_remove:
-            k = self.layout.pop((x, y))
+            for (x, y) in to_remove:
+                k = self.layout.pop((x, y))
 
-            wi, he = self.slices[k]
-            for j in range(y, y + he):
-                for i in range(x, x + wi):
-                    self.slice_map.pop((i, j))
-                    self.empty.add((i, j))
+                wi, he = self.slices[k]
+                for j in range(y, y + he):
+                    for i in range(x, x + wi):
+                        self.slice_map.pop((i, j))
+                        self.empty.add((i, j))
 
         self.fill_layout(pizza, 'random')
 

@@ -3,22 +3,29 @@ import codecs
 import json
 import numpy as np
 from individual import Individual
+import os
 random.seed(0)
 
 
 resume = False
 i_start = 0
-G_max = 100
-P = 20
+G_max = 5000
+P = 200
 c_par = 0.20
-c_rec = 0.30
-c_mut = 0.50
+c_rec = 0.10
+c_mut = 0.70
 c_ran = 0.00
 s = c_par + c_rec + c_mut + c_ran
 c_par /= s
 c_rec /= s
 c_mut /= s
 c_ran /= s
+
+inp_fpath = "input/d_big.in" # a_example  b_small  c_medium  d_big
+res_path = "results_big/"
+for path in [res_path, res_path+'generations_backup/', res_path+'history_best/']:
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 
 def i2s(i, d=2):
@@ -76,16 +83,15 @@ def make_next_generation(population, pizza):
 
     for _ in range(int(c_mut * P)):
         A = random.choice(next_generation)
+        levels = random.choice([1,2,3])
         B = A.copy()
-        B.mutate(pizza)
+        B.mutate(pizza, levels)
         next_generation.append(B)
 
     for _ in range(int(c_ran * P)):
         A = Individual({}, slices, n_col, n_row, L, H)
         A.fill_layout(pizza)
         next_generation.append(A)
-
-
 
     next_generation.sort(key = lambda x: x.efficiency(), reverse=True)
     return next_generation
@@ -96,7 +102,7 @@ def save_population(population, G_n):
     for ind in population:
         res.append(list(ind.layout.items()))
 
-    with codecs.open("results_medium/generations_backup/G_%s.json"%i2s(G_n, 4), 'w') as fout:
+    with codecs.open(res_path+"generations_backup/G_%s.json"%i2s(G_n, 4), 'w') as fout:
         json.dump(res, fout)
 
 
@@ -115,8 +121,7 @@ def load_population(fname, slices, n_col, n_row, L, H, pizza):
     return population
 
 
-
-pizza, n_row, n_col, L, H = read_setup("input/c_medium.in") # a_example  b_small  c_medium  d_big
+pizza, n_row, n_col, L, H = read_setup(inp_fpath)
 slices = generate_possible_slices(L, H)
 
 if resume == False:
@@ -128,7 +133,7 @@ if resume == False:
     population.sort(key = lambda x: x.efficiency(), reverse=True)
 else:
     print("Continuing previous optimization.")
-    population = load_population("results_medium/generations_backup/G_%s.json"%i2s(i_start, 4), slices, n_col, n_row, L, H, pizza)
+    population = load_population(res_path + "generations_backup/G_%s.json"%i2s(i_start, 4), slices, n_col, n_row, L, H, pizza)
     print(len(population), P)
     if len(population) < P:
         print("Loaded population is smaller than the given max population.\nExtending it with random individuals.")
@@ -149,13 +154,12 @@ for i in range(i_start+1, G_max):
     eff_max = population[0].efficiency()
     scores.append((i, eff_max))
 
-    print("%s; %6.3f%%"%(i2s(i, 4), eff_max))
+    print("%s; %7.4f%%"%(i2s(i, 4), eff_max))
 
-    population[0].dump_layout("results_medium/history_best/G_%s_i001.txt"%i2s(i, 4))
-    print(len(population))
+    population[0].dump_layout(res_path+"history_best/G_%s_i001.txt"%i2s(i, 4))
 
 save_population(population, i)
-with codecs.open("results_medium/opt_convergence.txt", "a") as fout:
+with codecs.open(res_path+"opt_convergence.txt", "a") as fout:
     for i, eff in scores:
-        fout.write("%s; %6.3f\n"%(i2s(i, 4), eff_max))
+        fout.write("%s; %7.4f\n"%(i2s(i, 4), eff_max))
 
