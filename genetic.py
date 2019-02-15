@@ -82,9 +82,10 @@ def make_next_generation(population, pizza):
     next_generation += mating_pool
 
     for _ in range(int(c_mut * P)):
-        A = random.choice(next_generation)
-        levels = random.choice([1,2,3])
+        # A = random.choice(next_generation)
+        A = mating_pool[0]
         B = A.copy()
+        levels = random.choice([1,2,3])
         B.mutate(pizza, levels)
         next_generation.append(B)
 
