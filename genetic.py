@@ -155,10 +155,12 @@ for i in range(i_start+1, G_max):
     scores.append((i, eff_max))
 
     print("%s; %7.4f%%"%(i2s(i, 4), eff_max))
-
     population[0].dump_layout(res_path+"history_best/G_%s_i001.txt"%i2s(i, 4))
+    if i % 250 == 0:
+        save_population(population, i)
 
 save_population(population, i)
+
 with codecs.open(res_path+"opt_convergence.txt", "a") as fout:
     for i, eff in scores:
         fout.write("%s; %7.4f\n"%(i2s(i, 4), eff_max))
