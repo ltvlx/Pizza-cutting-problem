@@ -307,6 +307,14 @@ class Individual:
         return True
 
 
+    def save_as_answer(self, fname):
+        with codecs.open(fname, 'w') as fout:
+            fout.write("%d\n"%len(self.layout))
+            for (x, y), k in self.layout.items():
+                wi, he = self.slices[k]
+                fout.write("%d %d %d %d\n"%(y, x, y+he-1, x+wi-1))
+
+
     ###########################################################################
 
     def __isolated_cell(self, x, y):

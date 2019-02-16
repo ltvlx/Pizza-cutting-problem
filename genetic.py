@@ -156,6 +156,9 @@ for i in range(i_start+1, G_max):
     scores.append((i, eff_max))
 
     print("%s; %7.4f%%"%(i2s(i, 4), eff_max))
+    if eff_max > 99.99:
+        population[0].save_as_answer(res_path+"solution.txt")
+        break
     population[0].dump_layout(res_path+"history_best/G_%s_i001.txt"%i2s(i, 4))
     if i % 250 == 0:
         save_population(population, i)
