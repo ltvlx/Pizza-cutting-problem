@@ -285,6 +285,24 @@ class Individual:
             for (x, y), k in self.layout.items():
                 fout.write("%4d, %4d, %2d\n"%(x, y, k))
 
+    
+    def load_layout(self, fname):
+        with codecs.open(fname, 'r') as fin:
+            for line in fin:
+                x, y, k = map(int, line.split(','))
+                wi, he = self.slices[k]
+                if self.__exceeds_boundary(x, y, wi, he) or \
+                    self.__collides_w_used(x, y, wi, he) or \
+                    not self.__enough_contents(pizza, x, y, wi, he):
+                    print("Error in the in the given layout")
+                    return
+                else:
+                    self.layout[(x,y)] = k
+                    for j in range(y, y + he):
+                        for i in range(x, x + wi):
+                            self.slice_map[(i, j)] = (x, y)
+                            self.empty.remove((i, j))
+
 
     def check_correctness(self, pizza):
         """
@@ -438,7 +456,7 @@ class Individual:
 
 
 if __name__ == "__main__":
-    pizza, n_row, n_col, L, H = read_setup("input/c_medium.in") # a_example  b_small  c_medium  d_big
+    pizza, n_row, n_col, L, H = read_setup("input/d_big.in") # a_example  b_small  c_medium  d_big
     slices = generate_possible_slices(L, H)
     # print("Max score is %d"%(n_col * n_row))
     # for i in range(len(slices)):
@@ -448,6 +466,9 @@ if __name__ == "__main__":
     A = Individual({}, slices, n_col, n_row, L, H)
     A.fill_layout(pizza, 'lrud')
     print(A)
+    # A.load_layout("results_big/G_2774_i001.txt")
+    # A.draw_layout("sol_big.pdf")
+    # A.save_as_answer("solution_big.txt")
 
     # B.fill_layout(pizza)
     B = Individual({}, slices, n_col, n_row, L, H)
