@@ -1,5 +1,5 @@
 # Pizza cutting problem
-The solution would be to optimize the layout of slices using genetic algorithm.
+A solution to the practice round problem of Google HashCode 2019.
 
 
 ### Algorithm description:
@@ -24,9 +24,7 @@ The solution would be to optimize the layout of slices using genetic algorithm.
 
 
 ### Open questions:
-Why would the ideas below lead to the convergence?  
-Why wouldn't it force to converge to a local maximum?  
-How to formulate the idea of keeping the densely-filled areas of a layout when performing a recombination?  
+How to improve the recombination to avoid inefficient combination in the area of cuts?
 
 Idea of mutations (implemented):
 Go through some of unused cells and remove adjacent slices. Then, try to fill them again.
