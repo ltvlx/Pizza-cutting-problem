@@ -61,12 +61,6 @@ Instead, filling the layout in spiral order might be helpful.
 
 
 ### Helpful links:
-Read about the contest:  
-https://codingcompetitions.withgoogle.com/hashcode
-
-Join the team:  
-https://hashcodejudge.withgoogle.com/#join-team/5244709622513664/sX-bzEaQ6Ceq1q03UxMN0mTCv51kh9ue0SPu44dAEY4
-
 Cutting stock problem solved via genetic algorithm:  
 https://github.com/fabiofdsantos/2d-cutting-stock-problem
 
